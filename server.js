@@ -12,8 +12,9 @@ const REDIRECT_URI = process.env.REDIRECT_URI || 'https://id-fm.netlify.app/edm-
 
 // Exchange auth code for token
 app.post('/token', async (req, res) => {
-  const { code, code_verifier } = req.body;
+  const { code, code_verifier, redirect_uri } = req.body;
   if (!code || !code_verifier) return res.status(400).json({ error: 'Missing code or verifier' });
+  const effectiveRedirect = redirect_uri || REDIRECT_URI;
 
   try {
     const response = await fetch('https://accounts.spotify.com/api/token', {
@@ -22,7 +23,7 @@ app.post('/token', async (req, res) => {
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         code,
-        redirect_uri: REDIRECT_URI,
+        redirect_uri: effectiveRedirect,
         client_id: CLIENT_ID,
         client_secret: CLIENT_SECRET,
         code_verifier
